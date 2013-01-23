@@ -11,7 +11,7 @@
 #include <PluginInc.h>
 #include <Interface/PluginLoader/Ix_PluginLoader.h>
 #include <Interface/ScriptMgr/Ix_ScriptMgr.h>
-#include <Interface/ConfigMgr/Ix_Configmgr.h>
+#include <Interface/ConfigMgr/Ix_ConfigMgr.h>
 #include <Interface/FwEntry/Ix_FwIntf.h>
 
 #include <LwApiLib/Framwork/FwEntry/FrameworkEntry.h>
@@ -37,7 +37,7 @@ LWRESULT Fw_Init(Ix_ConfigSrc* config_src, uint32_ entry_count)
 {
 	ASSERT_CHECK_RET(LWDP_API_LOG, LWDP_PARAMETER_ERROR, (config_src), "Fw_Init() Parameter Error");
 
-#ifdef defined(_WIN32) || defined(WIN32)
+#ifdef LWDP_PLATFORM_DEF_WIN32
 	int res = FALSE;
 	res = pthread_win32_process_attach_np(); 
 	if(!res) //if false
@@ -46,6 +46,14 @@ LWRESULT Fw_Init(Ix_ConfigSrc* config_src, uint32_ entry_count)
 		return LWDP_ERROR;
 	}
 	lw_log_info(LWDP_MODULE_LOG, "pThread Init OK!");
+
+	WSADATA wsaData;
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != NO_ERROR) {
+		lw_log_err(LWDP_MODULE_LOG, "WSAStartup failed with error: %ld\n", iResult);
+		return LWDP_ERROR;
+	}
+
 #endif
 
 	gPluginMgr = new CPluginManager;
@@ -76,7 +84,7 @@ LWRESULT Fw_Init(Ix_ConfigSrc* config_src, uint32_ entry_count)
 	RINOK(gPluginMgr->GetPluginLoader()->InitializePlugins());
 		
     //Cx_Interface<Ix_ConfigMgr> iConfigMgr(CLSID_ConfigMgr);
-	GET_OBJECT(ConfigMgr, iConfigMgr, LWDP_GET_OBJECT_ERROR);
+	GET_OBJECT_RET(ConfigMgr, iConfigMgr, LWDP_GET_OBJECT_ERROR);
 	for(uint32_ i=0; i<entry_count; ++i)
 		RINOK(iConfigMgr->AddConfigSrc(&config_src[i]));
 
@@ -111,10 +119,10 @@ LWRESULT Fw_Init(Ix_ConfigSrc* config_src, uint32_ entry_count)
 LWRESULT Fw_Start()
 {
 	Script_Ptr code_buf; 
-	GET_OBJECT(ConfigMgr, iConfigMgr, LWDP_GET_OBJECT_ERROR);
+	GET_OBJECT_RET(ConfigMgr, iConfigMgr, LWDP_GET_OBJECT_ERROR);
 	RINOK(iConfigMgr->GetModuleScript(LW_FW_TOP_TAG, LW_FW_SCRIPT_GLOBAL_INIT_TAG, code_buf));
 	
-	GET_OBJECT(ScriptMgr, iScriptMgr, LWDP_GET_OBJECT_ERROR);
+	GET_OBJECT_RET(ScriptMgr, iScriptMgr, LWDP_GET_OBJECT_ERROR);
 	RINOK(iScriptMgr->SyncScriptRun(code_buf));
 
     return LWDP_OK;
@@ -123,10 +131,10 @@ LWRESULT Fw_Start()
 LWRESULT Fw_Stop()
 {
 	Script_Ptr code_buf; 
-	GET_OBJECT(ConfigMgr, iConfigMgr, LWDP_GET_OBJECT_ERROR);
+	GET_OBJECT_RET(ConfigMgr, iConfigMgr, LWDP_GET_OBJECT_ERROR);
 	RINOK(iConfigMgr->GetModuleScript(LW_FW_TOP_TAG, LW_FW_SCRIPT_GLOBAL_UNINIT_TAG, code_buf));
 	
-	GET_OBJECT(ScriptMgr, iScriptMgr, LWDP_GET_OBJECT_ERROR);
+	GET_OBJECT_RET(ScriptMgr, iScriptMgr, LWDP_GET_OBJECT_ERROR);
 	RINOK(iScriptMgr->SyncScriptRun(code_buf));
 
     return LWDP_OK;

@@ -1,12 +1,12 @@
  
 #define LWDP_MODULE_IMPL
-#include <Lwdp.h>
+#include <LwDp.h>
 #include <PluginInc.h>
 
 #include <Interface/ConfigMgr/Ix_ConfigMgr.h>
 #include "Cx_ScriptMgr.h"
 
-#include <../UModule/Interface/Example/Ix_Example.h>
+//#include <../UModule/Interface/Example/Ix_Example.h>
 #include "ScriptAction.h"
 
 LWDP_NAMESPACE_BEGIN;
@@ -28,7 +28,7 @@ DEF_MODULE_INFO_END(ScriptMgr);
 DEF_INIT_FUN(ScriptMgr)
 {
 	printf("ScriptMgr InitializePlugin\n");
-	GET_OBJECT(ScriptMgr, iScript, LWDP_GET_OBJECT_ERROR);
+	GET_OBJECT_RET(ScriptMgr, iScript, LWDP_GET_OBJECT_ERROR);
 	iScript->RegisteAction(new APrint);
 
     return LWDP_OK;

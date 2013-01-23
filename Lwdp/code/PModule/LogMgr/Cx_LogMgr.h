@@ -1,9 +1,11 @@
 #ifndef CX_LOG_MANAGER_H
 #define CX_LOG_MANAGER_H
 
+#include <LwDp.h>
 #include <boost/shared_ptr.hpp>
 #include <list>
 #include <Interface/LogMgr/Ix_LogMgr.h>
+#include <Interface/ConsoleMgr/Ix_ConsoleMgr.h>
 
 LWDP_NAMESPACE_BEGIN;
 
@@ -43,13 +45,20 @@ private:
 						    long line,
 						    const char* stringFormat, ...);
 
+	virtual LWRESULT LogSwitch(bool switch_tag);
 private:
+	virtual int32_ ConsoleLogSwitch(COMMAND_LINE& command_line);
+	virtual int32_ ConsoleLogLevel(COMMAND_LINE& command_line);
 	virtual log4cpp::Priority::PriorityLevel getLevel(const tstring& level_str);
 	virtual log4cpp::Priority::PriorityLevel getLevel(LWDP_LOG_MGR::LwdpLogLevel level_enum);
 
 private:
 	MyAppender_List mInAppender;
+
+public:
+	static int32_ mLogSwitch;
 };
+
 
 LWDP_NAMESPACE_END;
 

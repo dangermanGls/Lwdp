@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\code\h;..\..\..\..\code\h\LwApiLib\ComLib"
+				AdditionalIncludeDirectories="..\..\..\..\code\h;..\..\..\..\code\h\LwApiLib\ComLib\Lua;..\..\..\..\code\h\LwApiLib\ComLib"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LOGMGRDLL_EXPORTS;LWDP_PLUGIN_CONTEXT;LWDP_DEBUG_MACRO"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -61,8 +62,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\..\..\code\bin\Lib\LwdpLib.lib ws2_32.lib"
-				OutputFile="..\..\..\..\code\bin\plugins\$(ProjectName).dll"
+				AdditionalDependencies="..\..\..\..\bin\Lib\LwdpLib.lib ws2_32.lib"
+				OutputFile="..\..\..\..\bin\plugins\$(ProjectName).dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -177,7 +178,27 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\..\..\code\PModule\LogMgr\Ix_LogMgr.pkg"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\..\code\PModule\LogMgr\LogMgrErrno.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\..\..\code\PModule\LogMgr\LogMgrModule.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\..\code\PModule\LogMgr\LogTagDef.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\..\code\PModule\LogMgr\Lua_Interface_LogMg.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\..\code\PModule\LogMgr\Lua_LogMgr.cpp"
 			>
 		</File>
 		<File

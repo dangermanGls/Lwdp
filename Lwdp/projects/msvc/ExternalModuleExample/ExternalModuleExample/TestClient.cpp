@@ -1,23 +1,30 @@
-// TestClient.cpp : Defines the entry point for the console application.
-//
-
-
 
 #include <Lwdp.h>
 #include <LwApi.h>
+
+
+
 using namespace NLwdp;
-#include <../UModule/Interface/Example/Ix_example.h>
+//#include <../UModule/Interface/Example/Ix_example.h>
 
 #include <Interface/ConfigMgr/Ix_XmlMgr.h>
 #include <Interface/ConfigMgr/Ix_ConfigMgr.h>
 #include <Interface/ScriptMgr/Ix_ScriptMgr.h>
 #include <Interface/LuaMgr/Ix_LuaMgr.h>
+#include <Interface/LogMgr/Ix_LogMgr.h>
+#include <Interface/ZmqMgr/Ix_ZmqMgr.h>
+#include <Interface/EventMgr/Ix_EventMgr.h>
+#include <Interface/TimerMgr/Ix_TimerMgr.h>
+#include <Interface/ConsoleMgr/Ix_ConsoleMgr.h>
+#include <../UModule/Interface/TSFrontend/Ix_TSFrontend.h>
+#include <../UModule/Interface/TcpServer/Ix_TcpServer.h>
 
 #include <vector>
 #include <set>
 #include <iostream>
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
+
 
 struct Foo
 { 
@@ -119,25 +126,105 @@ PC_DATA* ConfigSrcImp::LoadConfigData()
 
 typedef std::list<int> INTLIST;
 
+///////////////////////////////////////////////
+
+#define NBR_CLIENTS 5
+#define NBR_WORKERS 4
+
+static unsigned int __stdcall
+worker_task (void *args)
+{
+	GET_OBJECT_RET(ZmqMgr, iZmqMgr, 0);
+
+	ContextHandle context = iZmqMgr->GetNewContext();
+	SocketHandle responder = iZmqMgr->GetNewSocket(context, LWDP_REP);
+
+	iZmqMgr->Connect(responder, "tcp://localhost:5560");
+
+	while (1) {
+		// Wait for next request from client
+		std::string retdata = iZmqMgr->Recv(responder, 0);
+		printf ("Received request: [%s]\n", retdata.c_str());
+
+		// Do some 'work'
+		Sleep (1);
+
+		// Send reply back to client
+		iZmqMgr->Send(responder, "World", 6, 0);
+	}
+	// We never get here but clean up anyhow
+
+	iZmqMgr->CloseSocket(responder);
+	iZmqMgr->CloseContext(context);
+	
+	return 0;
+}
+
+static unsigned int __stdcall
+client_task (void *args)
+{
+	GET_OBJECT_RET(ZmqMgr, iZmqMgr, 0);
+	
+	ContextHandle context = iZmqMgr->GetNewContext();
+	SocketHandle requester = iZmqMgr->GetNewSocket(context, LWDP_REQ);
+
+	iZmqMgr->Connect(requester, "tcp://localhost:5559");
 
 
+	int request_nbr;
+	for (request_nbr = 0; request_nbr != 10; request_nbr++) 
+	{
+		iZmqMgr->Send(requester, "Hello", 6, 0);
+
+		std::string retdata = iZmqMgr->Recv(requester, 0);
+		
+		printf ("Received reply %d [%s]\n", request_nbr, retdata.c_str());
+	
+	}
+
+	iZmqMgr->CloseSocket(requester);
+	iZmqMgr->CloseContext(context);
+	return 0;
+}
+
+
+void io_callback(void *loop, void *w, int revents)
+{
+	printf("!!!!!Call Back!!!!\n");
+}
+
+void timer_callback1(void *arg)
+{
+	printf("!!!!!Timer Call Back1!!!!\n");
+}
+void timer_callback2(void *arg)
+{
+	int* t = (int*)arg;
+	printf("!!!!!Timer Call Back2: %d!!!!\n", *t);
+}
+void timer_callback3(void *arg)
+{
+	printf("!!!!!Timer Call Back3!!!!\n");
+}
 int32_ main()
 {
 	LWRESULT stat = LWDP_ERROR;
 
-	ConfigSrcImp csrc("../../../../Code/bin/xml/ConfigExternal.xml");
+	ConfigSrcImp csrc("../../../../bin/xml/ConfigExternal.xml");
 	stat = Fw_Init(&csrc, 1);
 	if(stat != LWDP_OK)
 	{
 		lw_log_err(LWDP_MODULE_LOG, "Fw_Init Error(0x%x)!", stat);
+		system("pause");
 		return -1;
 		
-	}
+	} 
 
 	stat = Fw_Start();
 	if(stat != LWDP_OK)
 	{
 		lw_log_err(LWDP_MODULE_LOG, "Fw_Start Error(0x%x)!", stat);
+		system("pause");
 		return -1;
 		
 	}
@@ -146,19 +233,181 @@ int32_ main()
 	if(stat != LWDP_OK)
 	{
 		lw_log_err(LWDP_MODULE_LOG, "Fw_Stop Error(0x%x)!", stat);
+		system("pause");
 		return -1;
 		
 	}
+
+	//DateTime dt(2006, 10, 22, 15, 22, 34);
+	//std::string s(DateTimeFormatter::format(dt, "%e %b %Y %H:%M")); 
+	// "22 Oct 2006 15:22"
+	//Timestamp now;
+	//s = DateTimeFormatter::format(now, DateTimeFormat::SORTABLE_FORMAT);
+	// "2006-10-30 09:27:44"
+	//Timespan span(5, 11, 33, 0, 0);
+	//s = DateTimeFormatter::format(span, "%d days, %H hours, %M minutes");
+	// "5 days, 11 hours,
+
+
+  
+	//GET_OBJECT_RET(TcpServer, iTcpServer, 0);
+
+	//LWRESULT ret = iTcpServer->Init();
+
+	//LWRESULT ret2 = iTcpServer->RunServer();
+
+
 	
-	//long_ val = 100;
-	//GET_OBJECT(Example, iExample, 0);
-	//iExample->Foo(val);
+	//GET_OBJECT_RET(ConsoleMgr, iConsoleMgr, 0);
+
+	//iConsoleMgr->RunConsole();
+
+	//GET_OBJECT_RET(EventMgr, iEventMgr, 0);
+
+	//RINOK(iEventMgr->InitLoop(0));
+
+	//GET_OBJECT_RET(TSFrontend, iTSFrontend, 0);
+
+	//LWRESULT ret = iTSFrontend->Init();
+
+	//ret = iTSFrontend->RunServer();
+#if 0
+
+	GET_OBJECT_RET(TimerTick, iTimerTick, 0);
+
+	uint32_ startMs = iTimerTick->GetMicroseconds();
+	{
+		Sleep(2000);
+
+	}
+	uint32_ endMs = iTimerTick->GetMicroseconds();
+	uint32_ diff1 = endMs - startMs;
+
+	uint32_ startUs = iTimerTick->GetMilliseconds();
+	{
+		Sleep(2000);
+
+	}
+	uint32_ endUs = iTimerTick->GetMilliseconds();
+	uint32_ diff2 = endMs - startMs;
+
+	printf("d1:%d d2:%d\n", diff1, diff2);
 
 
-	GET_OBJECT(LuaMgr, iLuaMgr, 0);
-	iLuaMgr->DoFile("../LuaMgrDll/Test2.lua");
+	GET_OBJECT_RET(TimerMgr, iTimerMgr, 0);
+	int argint = 123;
+	TimerHandle timer1 = iTimerMgr->CreateTimer(timer_callback1, &argint, 5.0, 1.0);
+	TimerHandle timer2 = iTimerMgr->CreateTimer(timer_callback2, &argint, 2.0, 1.0);
+	TimerHandle timer3 = iTimerMgr->CreateTimer(timer_callback3, &argint, 1.0, 1.0);
 
-	getchar();
+
+	iTimerMgr->TimerStart(timer1);
+	iTimerMgr->TimerStart(timer2);
+	iTimerMgr->TimerStart(timer3);
+	Sleep(15000);
+	iTimerMgr->TimerStop(timer1);
+	iTimerMgr->TimerStop(timer2);
+	iTimerMgr->TimerStop(timer3);
+
+	iTimerMgr->DestoryTimer(timer1);
+	iTimerMgr->DestoryTimer(timer2);
+	iTimerMgr->DestoryTimer(timer3);	
+
+
+
+    int client_nbr;
+    for (client_nbr = 0; client_nbr < NBR_CLIENTS; client_nbr++) {
+        HANDLE client;
+        client = (HANDLE) _beginthreadex (NULL, 0,
+        client_task, 0, 0 , NULL);
+        if (client == 0) {
+            printf ("error in _beginthreadex\n");
+            return -1;
+        }
+    }
+    int worker_nbr;
+    for (worker_nbr = 0; worker_nbr < NBR_WORKERS; worker_nbr++) {
+        HANDLE worker;
+        worker = (HANDLE) _beginthreadex (NULL, 0,
+        worker_task, 0, 0 , NULL);
+        if (worker == 0) {
+            printf ("error in _beginthreadex\n");
+            return -1;
+        }
+    }
+
+
+
+	GET_OBJECT_RET(ZmqMgr, iZmqMgr, 0);
+	
+	ContextHandle context = iZmqMgr->GetNewContext();
+	SocketHandle frontend = iZmqMgr->GetNewSocket(context, LWDP_ROUTER);
+	SocketHandle backend = iZmqMgr->GetNewSocket(context, LWDP_DEALER);
+
+	iZmqMgr->Bind(frontend, "tcp://*:5559");
+	iZmqMgr->Bind(backend, "tcp://*:5560");
+
+	// Initialize poll set
+	LWDP_POLLITEM_T items [] = {
+	    { frontend, 0, LWDP_POLLIN, 0 },
+	    { backend, 0, LWDP_POLLIN, 0 }
+	};
+	// Switch messages between sockets
+	while (1) {
+		
+	    int more; // Multipart detection
+
+	    iZmqMgr->Poll(items, 2, -1);
+	    if (items [0].revents & LWDP_POLLIN) 
+		{
+	        while (1) 
+			{
+				GET_OBJECT_RET(ZMessage, iZMessage, 0);
+	            // Process all parts of the message
+	            iZMessage->InitZMessage();
+	            iZmqMgr->Recv(frontend, iZMessage, 0);
+	            
+	            uint32_ more_size = sizeof (more);
+				iZmqMgr->Getsockopt(frontend, LWDP_RCVMORE, &more, &more_size);
+				iZmqMgr->Send(backend, iZMessage, more? LWDP_SNDMORE: 0);
+                if (!more)
+                    break; // Last message part
+	         }
+	    }
+        if (items [1].revents & LWDP_POLLIN) 
+		{
+            while (1) 
+			{
+				GET_OBJECT_RET(ZMessage, iZMessage, 0);
+                // Process all parts of the message
+				iZMessage->InitZMessage();
+	            iZmqMgr->Recv(backend, iZMessage, 0);
+				
+                size_t more_size = sizeof (more);
+				iZmqMgr->Getsockopt(backend, LWDP_RCVMORE, &more, &more_size);
+				iZmqMgr->Send(frontend, iZMessage, more? LWDP_SNDMORE: 0);
+                if (!more)
+                    break; // Last message part
+            }
+         }
+	}
+	                // We never get here but clean up anyhow
+	iZmqMgr->CloseSocket(frontend);
+	iZmqMgr->CloseSocket(backend);
+	iZmqMgr->CloseContext(context);
+
+#endif
+
+
+
+	GET_OBJECT_RET(LuaMgr, iLuaMgr, 0);
+	iLuaMgr->DoFile("../../../../code/bin/Lua/Test2.lua");
+
+//	long_ val1 = 100;
+//	GET_OBJECT_RET(Example, iExample, 0);
+//	iExample->Foo(val1);
+
+	system("pause");
 	return 0;
 }
 

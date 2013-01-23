@@ -22,9 +22,25 @@ EXTERN_C_BEGIN;
 *  Return:         // �����ֵ��˵��	
 *  Others:         // ����˵��
 *****************************************************************************/
-void LINUX_IMPL_API(TaskDelay)(ulong_ tick)
+void LINUX_IMPL_API(TaskDelay)(uint32_ tick)
 {
-    sleep(tick);
+	struct timespec req;
+	req.tv_sec = tick / 1000;
+	req.tv_nsec = (tick % 1000) * 1000;
+
+	//struct timeval tvBegin;
+	//struct timeval tvNow;
+
+	//gettimeofday (&tvBegin, NULL);
+	int ret = nanosleep (&req, NULL);
+	//usleep(tick);
+	//gettimeofday (&tvNow, NULL);
+	//unsigned int nTimeTest =
+	//(tvNow.tv_sec - tvBegin.tv_sec) * 1000000 + tvNow.tv_usec -
+	//tvBegin.tv_usec;
+	//unsigned int nReduce = nTimeTest - tick;
+	//printf (" %8d %8u %8d\n", tick, nTimeTest, nReduce);
+
 }
 
 /****************************************************************************
@@ -105,6 +121,7 @@ MODULEID LoadLibraryA(const char_* filename)
     MODULEID hdll = dlopen(name.c_str(), RTLD_LAZY);
 
     seterr(dlerror());
+
     if (!hdll)
     {
         char* tmpname = Co_PathFindFileNameA(name.c_str());
@@ -113,6 +130,7 @@ MODULEID LoadLibraryA(const char_* filename)
             name.insert(tmpname - name.c_str(), "lib");
             hdll = dlopen(name.c_str(), RTLD_LAZY);
             seterr(dlerror());
+			PLATFORM_LOG(LWDP_MODULE_LOG, LWDP_LOG_ERR, "LoadLibrary Error(%s)", dlerror());
         }
     }
     if (hdll)

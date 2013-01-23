@@ -9,7 +9,7 @@
 
 
 LWDP_NAMESPACE_BEGIN;
-EXTERN_C_BEGIN;
+//EXTERN_C_BEGIN;
 
 #define M_errno			    (0x80000000)	
 #define M_logMsg    		(1 << 16)
@@ -22,19 +22,26 @@ EXTERN_C_BEGIN;
 #define M_logmgr			(8 << 16)
 #define M_dctmgr			(9 << 16)
 #define M_luamgr			(10 << 16)
+#define M_zmqmgr			(11 << 16)
+#define M_eventmgr			(12 << 16)
+#define M_timermgr			(13 << 16)
 
+#define M_perfmgr			(14 << 16)
+#define M_consolemgr		(15 << 16)
+#define M_dbmgr			    (16 << 16)
+#define M_commonutilmgr		(17 << 16)
 
 enum _ERROR_CAT_NUM
 {
 #undef  ERRNO_DB
 #define ERRNO_DB(x, y, z)		 LWDP_##x = y, 
-    #include <LwMErrnoBase.h>  
+    #include <LwMerrnoBase.h>
     LWDP_ERRNO_NUMCATS
 };
 
     
 #include <LwApiLib/Framwork/ErrMgr/LwErrMgr.h>
-EXTERN_C_END;
+//EXTERN_C_END;
 LWDP_NAMESPACE_END;
 #endif
 
