@@ -14,8 +14,14 @@
 //#include <LwApiLib/LwApi/win32/posix/pthread/sched.h>
 //#include <LwApiLib/LwApi/win32/posix/pthread/semaphore.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <wchar.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <errno.h>
+#include <arpa/inet.h>
 #include <LwDp.h>
 
 LWDP_NAMESPACE_BEGIN;
@@ -23,8 +29,9 @@ EXTERN_C_BEGIN;
 
 #define LINUX_IMPL_API(api) LINUX_##api
 
-
-
+#define __cdecl  
+#define __stdcall 
+#define SOCKET int
 #define DECLEXPORT
 #define OUTAPI      extern "C" DECLEXPORT
 #define PLNEXT     __T".so"
@@ -52,7 +59,7 @@ typedef int         (*FUNCPTR) ();       /* ptr to function returning int */
 
 //typedef HMODULE MODULEID;
 
-void LINUX_IMPL_API(TaskDelay)(ulong_ tick);
+void LINUX_IMPL_API(TaskDelay)(uint32_ tick);
 void LINUX_IMPL_API(HaltSystem)();
 int  LINUX_IMPL_API(snprintf)( char *buffer, int num, const char *format, ... );
 
@@ -108,7 +115,8 @@ MODULEID LoadLibraryA(const char_* filename);
 
 #define Lwdp_fprintf      fprintf
 #define Lwdp_sprintf      sprintf
-#define Lwdp_snprintf     portable_snprintf   //LINUX_IMPL_API(snprintf)
+#define Lwdp_snprintf     snprintf//portable_snprintf   //LINUX_IMPL_API(snprintf)
+#define Lwdp_vsnprintf    vsnprintf
 #define Lwdp_vstprintf    vsprintf
 
 #define Lwdp_tcscpy       strcpy

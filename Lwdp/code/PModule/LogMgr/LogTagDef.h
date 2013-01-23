@@ -6,13 +6,19 @@
 #ifndef LWDP_LOG_TAG_DEFINE_H_
 #define LWDP_LOG_TAG_DEFINE_H_
 
-#define LW_LOGMGR_MODULE_NAME  	__T("LogMgr")
+#define LW_LOGMGR_COMMAND_LEVEL_NAME	__T("loglevel")
+#define LW_LOGMGR_COMMAND_LEVEL_INFO  	__T("Change Debug Level")
+#define LW_LOGMGR_COMMAND_SWITCH_NAME	__T("logswitch")
+#define LW_LOGMGR_COMMAND_SWITCH_INFO  	__T("On/Off Log")
+   
+
+#define LW_LOGMGR_MODULE_NAME  	        __T("LogMgr")
 
 #define LW_LOGMGR_MODULE_TABLE_NAME  	__T("LevelTable")
 
 #define LW_LOGMGR_TABLE_LEVEL_TAG 	 	__T("LevelEntry")
 #define LW_LOGMGR_TABLE_MODULE_NAME_TAG __T("ModuleName")
-//#define LW_LOGMGR_TABLE_LEVEL_TAG 	 	__T("Level")
+#define LW_LOGMGR_TABLE_LEVEL_ATTR_TAG 	 	__T("Level")
 #define LW_LOGMGR_TABLE_TYPE_TAG 	 	__T("Type")
 #define LW_LOGMGR_TABLE_FILE_NAME_TAG	__T("FileName")
 #define LW_LOGMGR_TABLE_FILE_SIZE_TAG	__T("FileSize")
